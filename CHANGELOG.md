@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - 2026-11-27
+
+- Card: attribute values from the sensors are forced to numbers or plain words before they go into the markup.
+
 ## 0.2.0 - 2026-11-26
 
 Dengue Watch Thailand is now **Mosquito Watch Thailand**.

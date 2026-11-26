@@ -131,9 +131,20 @@ class MosquitoWatchCard extends HTMLElement {
   _model() {
     const m = {};
     for (const s of this._ents || []) {
-      const a = s.attributes;
+      const raw = s.attributes;
       if (!LEVEL_COLOR[s.state]) continue;
-      (m[a.disease] = m[a.disease] || {})[a.province] = { state: s.state, a, id: s.entity_id };
+      // attributes can come from any sensor that looks like ours: numbers are forced to numbers, keys to plain words
+      const n = (v) => { const x = parseFloat(v); return Number.isFinite(x) ? x : null; };
+      const list = (v) => (Array.isArray(v) ? v.map((x) => n(x) ?? 0) : []);
+      const disease = String(raw.disease).toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      if (!disease) continue;
+      const a = {
+        ...raw, disease,
+        cases_last_4_weeks: n(raw.cases_last_4_weeks) ?? 0, expected_last_4_weeks: n(raw.expected_last_4_weeks),
+        ratio: n(raw.ratio), cases_this_year: n(raw.cases_this_year), cases_same_period_last_year: n(raw.cases_same_period_last_year),
+        weekly_cases: list(raw.weekly_cases), weekly_median: list(raw.weekly_median),
+      };
+      (m[disease] = m[disease] || {})[String(raw.province)] = { state: s.state, a, id: s.entity_id };
     }
     return m;
   }
