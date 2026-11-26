@@ -2,24 +2,43 @@
   "config": {
     "step": {
       "user": {
-        "title": "Dengue Watch Thailand",
-        "description": "Weekly dengue cases of a Thai province from the Digital Disease Surveillance of the Department of Disease Control (Report 506), compared with the median of the five years before. Unofficial integration, not affiliated with the DDC.",
+        "title": "Mosquito Watch Thailand",
+        "description": "Weekly cases of mosquito-borne diseases (dengue, malaria, chikungunya, Zika) per province from the Digital Disease Surveillance of the Department of Disease Control (Report 506), compared with the median of the five years before. Your province and its neighbours are preselected. Unofficial integration, not affiliated with the DDC.",
         "data": {
-          "province": "Province"
+          "provinces": "Provinces",
+          "diseases": "Diseases"
         }
       }
     },
     "error": {
-      "cannot_connect": "The DDC surveillance dashboard could not be reached or has no dengue data for this province. Try again later."
+      "cannot_connect": "The DDC surveillance dashboard could not be reached. Try again later.",
+      "no_province": "Pick at least one province.",
+      "no_disease": "Pick at least one disease."
     },
     "abort": {
-      "already_configured": "This province is already set up."
+      "already_configured": "These provinces are already set up."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Provinces and diseases",
+        "description": "Every province and disease is one download from the DDC dashboard every 6 hours (about 10 s each).",
+        "data": {
+          "provinces": "Provinces",
+          "diseases": "Diseases"
+        }
+      }
+    },
+    "error": {
+      "no_province": "Pick at least one province.",
+      "no_disease": "Pick at least one disease."
     }
   },
   "entity": {
     "sensor": {
       "level": {
-        "name": "Level",
+        "name": "{disease} level",
         "state": {
           "low": "Below normal",
           "normal": "Normal",
@@ -28,10 +47,10 @@
         }
       },
       "cases_4_weeks": {
-        "name": "Cases last 4 weeks"
+        "name": "{disease} cases last 4 weeks"
       },
       "cases_year": {
-        "name": "Cases this year"
+        "name": "{disease} cases this year"
       }
     }
   }

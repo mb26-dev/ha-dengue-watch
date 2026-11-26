@@ -2,24 +2,43 @@
   "config": {
     "step": {
       "user": {
-        "title": "Dengue Watch Thailand",
-        "description": "Wöchentliche Dengue-Fälle einer thailändischen Provinz aus der digitalen Krankheitsüberwachung der Seuchenschutzbehörde DDC (Report 506), verglichen mit dem Median der fünf Vorjahre. Inoffizielle Integration, nicht mit der DDC verbunden.",
+        "title": "Mosquito Watch Thailand",
+        "description": "Wöchentliche Fälle von Krankheiten, die Mücken übertragen (Dengue, Malaria, Chikungunya, Zika), pro Provinz aus der digitalen Krankheitsüberwachung der Seuchenschutzbehörde DDC (Report 506), verglichen mit dem Median der fünf Vorjahre. Deine Provinz und ihre Nachbarn sind vorausgewählt. Inoffizielle Integration, nicht mit der DDC verbunden.",
         "data": {
-          "province": "Provinz"
+          "provinces": "Provinzen",
+          "diseases": "Krankheiten"
         }
       }
     },
     "error": {
-      "cannot_connect": "Das Überwachungs-Dashboard der DDC ist nicht erreichbar oder hat keine Dengue-Daten für diese Provinz. Bitte später erneut versuchen."
+      "cannot_connect": "Das Überwachungs-Dashboard der DDC ist nicht erreichbar. Bitte später erneut versuchen.",
+      "no_province": "Mindestens eine Provinz wählen.",
+      "no_disease": "Mindestens eine Krankheit wählen."
     },
     "abort": {
-      "already_configured": "Diese Provinz ist bereits eingerichtet."
+      "already_configured": "Diese Provinzen sind bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Provinzen und Krankheiten",
+        "description": "Jede Provinz und Krankheit ist ein Abruf beim DDC-Dashboard alle 6 Stunden (je etwa 10 s).",
+        "data": {
+          "provinces": "Provinzen",
+          "diseases": "Krankheiten"
+        }
+      }
+    },
+    "error": {
+      "no_province": "Mindestens eine Provinz wählen.",
+      "no_disease": "Mindestens eine Krankheit wählen."
     }
   },
   "entity": {
     "sensor": {
       "level": {
-        "name": "Lage",
+        "name": "{disease} Lage",
         "state": {
           "low": "Unter normal",
           "normal": "Normal",
@@ -28,10 +47,10 @@
         }
       },
       "cases_4_weeks": {
-        "name": "Fälle letzte 4 Wochen"
+        "name": "{disease} Fälle letzte 4 Wochen"
       },
       "cases_year": {
-        "name": "Fälle dieses Jahr"
+        "name": "{disease} Fälle dieses Jahr"
       }
     }
   }

@@ -101,6 +101,11 @@ def test_year_start_window_crosses_years():
     assert [(p.year, p.week) for p in st.weeks[-4:]] == [(2026, 52), (2026, 53), (2027, 1), (2027, 2)]
 
 
+def test_province_without_cases():
+    st = sv.evaluate({}, date(2026, 11, 26))
+    assert st.level == sv.LEVEL_NORMAL and st.cases_window == 0 and st.cases_year == 0
+
+
 if __name__ == "__main__":
     fails = 0
     for name, fn in list(globals().items()):

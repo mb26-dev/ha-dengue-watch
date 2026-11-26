@@ -1,4 +1,4 @@
-"""Client for the DDC dengue surveillance export."""
+"""Client for the DDC surveillance export (Report 506)."""
 
 from __future__ import annotations
 
@@ -25,12 +25,11 @@ def _variants(name: str) -> list[str]:
 
 
 class DengueApi:
-    def __init__(self, session: aiohttp.ClientSession, province_th: str) -> None:
+    def __init__(self, session: aiohttp.ClientSession) -> None:
         self._session = session
-        self._province = province_th
 
-    async def _get(self, province: str) -> str:
-        url = f"{BASE_URL}?disease={quote(DISEASES)}&chw={quote(province)}"
+    async def _get(self, disease: str, province: str) -> str:
+        url = f"{BASE_URL}?disease={quote(DISEASES[disease]['filter'])}&chw={quote(province)}"
         try:
             async with self._session.get(
                 url,
@@ -43,17 +42,23 @@ class DengueApi:
         except (aiohttp.ClientError, asyncio.TimeoutError) as err:
             raise DengueApiError(str(err) or type(err).__name__) from err
 
-    async def weekly(self) -> dict[int, dict[int, float]]:
-        """Weekly dengue cases of the province: {buddhist_year: {week: cases}}."""
+    async def weekly(self, province_th: str, disease: str = "dengue") -> dict[int, dict[int, float]]:
+        """Weekly cases of one disease in one province: {buddhist_year: {week: cases}}.
+
+        A province without any case of a rare disease (e.g. Zika) comes back as an empty
+        table; that is a valid answer and returns {}.
+        """
         last_error: Exception | None = None
-        for name in _variants(self._province):
-            text = await self._get(name)
+        empty = False
+        for name in _variants(province_th):
+            text = await self._get(disease, name)
+            if text.strip().count("\n") < 1:
+                empty = True  # header only or nothing: no case in five years
+                continue
             try:
-                series = parse_csv(text)
+                return parse_csv(text)
             except SurveillanceParseError as err:
                 last_error = err
-                continue
-            if any(series.values()):
-                return series
-            last_error = SurveillanceParseError("export without cases")
-        raise DengueApiError(f"no dengue data for {self._province}: {last_error}")
+        if empty and last_error is None:
+            return {}
+        raise DengueApiError(f"no data for {province_th} / {disease}: {last_error}")
