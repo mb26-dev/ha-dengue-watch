@@ -12,6 +12,7 @@ sys.modules["surveillance"] = sv
 spec.loader.exec_module(sv)
 
 FIXTURE = (ROOT / "tests/fixtures/krabi_2026-11-26.csv").read_text(encoding="utf-8")
+PHUKET = (ROOT / "tests/fixtures/phuket_2026-11-26.csv").read_text(encoding="utf-8")
 
 
 def test_epi_weeks():
@@ -36,10 +37,20 @@ def test_parse():
     assert s[2568][52] == 3
 
 
-def test_parse_quoted_thousands():
+def test_parse_quoted_thousands_and_labelled_year():
     text = 'Measure Names,สัปดาห์,Measure Values,ผู้ป่วย\nปี พ.ศ.2567,1,"1,891",\nปี พ.ศ. 2569,1,,"2,005"\n'
     s = sv.parse_csv(text)
     assert s[2567][1] == 1891 and s[2569][1] == 2005
+
+
+def test_phuket_is_high():
+    s = sv.parse_csv(PHUKET)
+    assert sum(s[2569].values()) == 1834
+    assert s[2567][1] == 216
+    st = sv.evaluate(s, date(2026, 11, 26))
+    assert st.last_week == (2026, 47)
+    assert st.cases_window == 34 + 45 + 56 + 51
+    assert st.level == sv.LEVEL_HIGH, (st.level, st.cases_window, st.expected_window)
 
 
 def test_parse_rejects_other_tables():

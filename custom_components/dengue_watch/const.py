@@ -12,9 +12,9 @@ ATTRIBUTION = (
 CONF_PROVINCE = "province"
 
 # The DDS dashboard "Disease situation" (รายงานสถานการณ์โรค) on the DDC Tableau server.
-# View 6 is the weekly case chart with the five years before; the URL filters pick the
-# disease group and the province. The dashboard is refreshed about every 6 hours.
-BASE_URL = "https://dvis3.ddc.moph.go.th/t/DDC_CENTER_DOE/views/_17806397830560/6.csv"
+# View 2 is the weekly line chart with the five years before; the URL filters pick the
+# diseases and the province. The dashboard is refreshed about every 6 hours.
+BASE_URL = "https://dvis3.ddc.moph.go.th/t/DDC_CENTER_DOE/views/_17806397830560/2.csv"
 DASHBOARD_URL = "https://ddsdoe.ddc.moph.go.th/dds-portal/"
 # all three dengue diagnoses of Report 506 (note the trailing space DDC uses in the first one)
 DISEASES = "Dengue fever ,Dengue haemorrhagic fever (DHF),Dengue shock syndrome (DSS)"

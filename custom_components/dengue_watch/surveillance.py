@@ -2,14 +2,16 @@
 
 Pure Python without Home Assistant imports, so it can be tested on its own.
 
-The CSV export of the DDS dashboard "Disease situation" lists the weekly number of
-cases per epidemiological week. Past years carry their value in the column
-"Measure Values", the current year in the column "ผู้ป่วย":
+The CSV export of the DDS dashboard "Disease situation" (line chart sheet) lists the
+weekly number of cases per epidemiological week. The five years before carry their
+Buddhist Era year in the first column; the rows of the current year have no year
+("# ลักษณะจำนวน (copy)"). Each row has its value in one of the value columns:
 
-    Measure Names,สัปดาห์,Measure Values,ผู้ป่วย
-    ปี พ.ศ. 2569,1,,5
-    ปี พ.ศ.2568,1,2,
+    Measure Names,สัปดาห์,# ลักษณะจำนวน (copy),Measure Values
+    # ลักษณะจำนวน (copy),1,5,
+    ปี พ.ศ. 2568,1,,2
 
+A labelled current year ("ปี พ.ศ. 2569") is understood as well.
 Years are Buddhist Era (CE + 543).
 """
 
@@ -55,20 +57,27 @@ def parse_csv(text: str) -> dict[int, dict[int, float]]:
     if not rows or len(rows[0]) < 3 or "สัปดาห์" not in rows[0][1]:
         raise SurveillanceParseError("unexpected header: " + (",".join(rows[0]) if rows else "empty"))
     series: dict[int, dict[int, float]] = {}
+    current: dict[int, float] = {}
     for row in rows[1:]:
         if len(row) < 3:
             continue
-        m = _YEAR_RE.search(row[0])
         week = _num(row[1])
-        if not m or week is None:
+        if week is None:
             continue
         values = [_num(v) for v in row[2:]]
         value = next((v for v in values if v is not None), None)
-        year = int(m.group(1))
-        series.setdefault(year, {})
+        m = _YEAR_RE.search(row[0])
+        if m:
+            target = series.setdefault(int(m.group(1)), {})
+        elif row[0].strip():
+            target = current
+        else:
+            continue
         if value is not None:
-            series[year][int(week)] = value
-    if not series:
+            target[int(week)] = value
+    if current:
+        series[(max(series) + 1) if series else 0] = current
+    if not series or 0 in series:
         raise SurveillanceParseError("no weekly values in the export")
     return series
 
