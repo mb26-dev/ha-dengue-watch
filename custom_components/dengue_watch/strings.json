@@ -1,0 +1,38 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Dengue Watch Thailand",
+        "description": "Weekly dengue cases of a Thai province from the Digital Disease Surveillance of the Department of Disease Control (Report 506), compared with the median of the five years before. Unofficial integration, not affiliated with the DDC.",
+        "data": {
+          "province": "Province"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "The DDC surveillance dashboard could not be reached or has no dengue data for this province. Try again later."
+    },
+    "abort": {
+      "already_configured": "This province is already set up."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "level": {
+        "name": "Level",
+        "state": {
+          "low": "Below normal",
+          "normal": "Normal",
+          "elevated": "Elevated",
+          "high": "High"
+        }
+      },
+      "cases_4_weeks": {
+        "name": "Cases last 4 weeks"
+      },
+      "cases_year": {
+        "name": "Cases this year"
+      }
+    }
+  }
+}

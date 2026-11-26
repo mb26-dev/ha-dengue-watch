@@ -1,0 +1,12 @@
+{
+  "domain": "dengue_watch",
+  "name": "Dengue Watch Thailand",
+  "codeowners": ["@mb26-dev"],
+  "config_flow": true,
+  "documentation": "https://github.com/mb26-dev/ha-dengue-watch",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/mb26-dev/ha-dengue-watch/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
