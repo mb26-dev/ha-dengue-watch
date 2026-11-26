@@ -125,15 +125,21 @@ class DengueCoordinator(DataUpdateCoordinator[dict[Key, DengueStatus]]):
             self._fetched[(province, disease)] = dt_util.utcnow().isoformat()
             self._evaluate_all()
             self.async_set_updated_data(self.data)
+            # keep every finished export, so a restart in the middle of a round loses nothing
+            self._store.async_delay_save(self._cache_data, 5)
         await self._save()
 
-    async def _save(self) -> None:
+    @callback
+    def _cache_data(self) -> dict:
         items = [
             {"province": p, "disease": d, "fetched": self._fetched.get((p, d)),
              "series": {str(y): {str(w): v for w, v in weeks.items()} for y, weeks in s.items()}}
             for (p, d), s in self._series.items()
         ]
-        await self._store.async_save({"items": items})
+        return {"items": items}
+
+    async def _save(self) -> None:
+        await self._store.async_save(self._cache_data())
 
     async def _async_update_data(self) -> dict[Key, DengueStatus]:
         # manual "update entity" requests: start a round, return what we have
