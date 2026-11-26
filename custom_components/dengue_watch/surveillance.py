@@ -22,6 +22,7 @@ import io
 import re
 from dataclasses import dataclass, field
 from datetime import date, timedelta
+from math import sqrt
 from statistics import median
 
 BE_OFFSET = 543
@@ -142,36 +143,63 @@ class DengueStatus:
 def classify(cases: float, expected: float) -> tuple[str, float | None]:
     """Level of the recent cases against the 5-year median of the same weeks.
 
-    Small numbers get a margin so that a single extra case does not flip the level:
-    elevated needs more than the median plus 2 cases, high more than twice the median
-    and at least 10 cases.
+    Case counts scatter by about the square root of their size, so a level needs more than
+    that noise: elevated means more than the median plus twice its square root (at least
+    3 cases more), high more than twice the median, at least 10 cases and clearly outside
+    the noise as well.
     """
     ratio = cases / expected if expected > 0 else None
-    if cases > max(2 * expected, 10 - 1e-9) and cases >= 10:
+    noise = max(3.0, 2 * sqrt(expected))
+    if cases >= 10 and cases > 2 * expected and cases > expected + 1.5 * noise:
         return LEVEL_HIGH, ratio
-    if cases > expected + 2:
+    if cases > expected + noise:
         return LEVEL_ELEVATED, ratio
     if expected >= 4 and cases < 0.5 * expected:
         return LEVEL_LOW, ratio
     return LEVEL_NORMAL, ratio
 
 
-def evaluate(series: dict[int, dict[int, float]], today: date) -> DengueStatus:
-    """Compare the newest complete weeks with the median of the five years before."""
+def is_dense(series: dict[int, dict[int, float]], today: date) -> bool:
+    """True when the current year reports a value in most weeks (dengue in most provinces).
+
+    Sparse series (malaria, Zika, small provinces) leave out the weeks without cases, so
+    a missing week there means zero, not "not reported yet".
+    """
     cur_year, cur_week = epi_week(today)
-    cur_be = cur_year + BE_OFFSET
-    # newest complete week: the week before the running one
+    values = series.get(cur_year + BE_OFFSET, {})
+    return cur_week > 3 and len(values) >= 0.7 * (cur_week - 2)
+
+
+def newest_week(series: dict[int, dict[int, float]], today: date) -> tuple[int, int]:
+    """Newest complete week with a value; the export may lag up to 2 weeks."""
+    cur_year, cur_week = epi_week(today)
     last = _shift(cur_year, cur_week, -1)
-    # the export may lag: step back while the newest week has no value yet (at most 2 weeks)
     for _ in range(2):
         if series.get(last[0] + BE_OFFSET, {}).get(last[1]) is not None:
             break
         last = _shift(last[0], last[1], -1)
+    return last
+
+
+def evaluate(series: dict[int, dict[int, float]], today: date,
+             last: tuple[int, int] | None = None) -> DengueStatus:
+    """Compare the newest complete weeks with the median of the five years before.
+
+    last: newest reported week to use (from a dense series of the same export date);
+    by default it is found in this series, or taken as last week for sparse series.
+    """
+    cur_year, cur_week = epi_week(today)
+    cur_be = cur_year + BE_OFFSET
+    if last is None:
+        last = newest_week(series, today) if is_dense(series, today) else _shift(cur_year, cur_week, -1)
 
     baseline_be = sorted(y for y in series if y < cur_be)[-5:]
 
     def cases_at(y: int, w: int) -> float | None:
-        return series.get(y + BE_OFFSET, {}).get(w)
+        # weeks without cases are left out of the export: a week of a listed year is 0
+        if y + BE_OFFSET not in series and not (y == cur_year and series):
+            return None
+        return series.get(y + BE_OFFSET, {}).get(w, 0.0)
 
     def median_at(y: int, w: int) -> float | None:
         # the same week number in each of the five years before year y
@@ -179,11 +207,8 @@ def evaluate(series: dict[int, dict[int, float]], today: date) -> DengueStatus:
         for i in range(1, 6):
             yb = y + BE_OFFSET - i
             if yb in series:
-                v = series[yb].get(w)
-                if v is None and w == 53:
-                    v = series[yb].get(52)
-                if v is not None:
-                    vals.append(v)
+                weeks_then = weeks_in_year(yb - BE_OFFSET)
+                vals.append(series[yb].get(min(w, weeks_then), 0.0))
         return float(median(vals)) if vals else None
 
     weeks: list[WeekPoint] = []

@@ -117,3 +117,26 @@ if __name__ == "__main__":
                 fails += 1
                 print("FAIL", name, err)
     sys.exit(1 if fails else 0)
+
+
+def test_noise_margin():
+    classify = sv.classify
+    assert classify(29, 26)[0] == "normal"
+    assert classify(40, 26)[0] == "elevated"
+    assert classify(186, 89)[0] == "high"
+    assert classify(2, 0)[0] == "normal"
+    assert classify(4, 0)[0] == "elevated"
+    assert classify(8, 20)[0] == "low"
+
+
+def test_sparse_series_counts_missing_weeks_as_zero():
+    evaluate, is_dense = sv.evaluate, sv.is_dense
+    series = {2564 + i: {10: 1.0, 30: 2.0} for i in range(5)}
+    series[2569] = {3: 1.0, 45: 1.0}
+    today = date(2026, 11, 26)
+    assert not is_dense(series, today)
+    st = evaluate(series, today, (2026, 47))
+    assert st.last_week == (2026, 47)
+    assert st.cases_window == 1
+    assert st.expected_window == 0
+    assert st.weeks[-1].cases == 0

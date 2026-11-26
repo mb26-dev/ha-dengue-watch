@@ -17,7 +17,7 @@ from homeassistant.util import dt as dt_util
 
 from .api import DengueApi, DengueApiError
 from .const import CACHE_VERSION, CONF_DISEASES, CONF_PROVINCES, DOMAIN, PROVINCES, REQUEST_GAP, UPDATE_INTERVAL
-from .surveillance import DengueStatus, evaluate
+from .surveillance import is_dense, newest_week, DengueStatus, evaluate
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,7 +69,14 @@ class DengueCoordinator(DataUpdateCoordinator[dict[Key, DengueStatus]]):
 
     def _evaluate_all(self) -> None:
         today = dt_util.now().date()
-        self.data = {key: evaluate(series, today) for key, series in self._series.items()}
+        # the newest reported week of the dense series (usually dengue) is the export date;
+        # sparse series use it too, so a week without cases counts as 0 instead of lagging
+        dense = [newest_week(s, today) for s in self._series.values() if is_dense(s, today)]
+        ref = max(dense) if dense else None
+        self.data = {
+            key: evaluate(series, today, None if is_dense(series, today) else ref)
+            for key, series in self._series.items()
+        }
 
     def fetched_at(self, key: Key) -> str | None:
         return self._fetched.get(key)
