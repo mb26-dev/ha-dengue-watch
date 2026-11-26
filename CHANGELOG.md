@@ -9,6 +9,8 @@ Dengue Watch Thailand is now **Mosquito Watch Thailand**.
 - New **Mosquito Watch card**, registered automatically: map of your provinces coloured by level, disease tabs, 12-week chart against the median, ranking. No YAML needed.
 - Exports run one after another in the background with a pause, every 6 hours, cached on disk so values are there right after a restart.
 - Existing entries are migrated; `sensor.dengue_<province>_level` keeps its entity ID.
+- Levels account for the random scatter of case counts: elevated needs more than the median plus twice its square root (at least 3 cases more).
+- In diseases with few cases, weeks without cases count as 0 instead of making the newest week lag behind.
 - New banner.
 
 ## 0.1.1 - 2026-11-26
