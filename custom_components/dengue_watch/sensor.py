@@ -60,7 +60,7 @@ SENSORS: tuple[DengueSensorDescription, ...] = (
         translation_key="level",
         device_class=SensorDeviceClass.ENUM,
         options=LEVELS,
-        icon="mdi:mosquito",
+        icon="mdi:virus-outline",
         value=lambda d: d.level,
         attrs=_level_attrs,
     ),
