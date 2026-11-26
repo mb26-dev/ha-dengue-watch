@@ -312,7 +312,7 @@ ha-card { overflow: hidden; background: linear-gradient(160deg, #15161a 0%, #101
 .tab span { opacity: .55; font-size: 11px; }
 .tab.on { border-color: var(--gold); background: rgba(212,175,55,.12); color: #fff; }
 .body { display: grid; grid-template-columns: 1fr; gap: 12px; }
-@container (min-width: 620px) { .body { grid-template-columns: 1.35fr 1fr; } .body .map { height: auto; min-height: var(--mh); } }
+@container (min-width: 620px) { .body { grid-template-columns: 1.35fr 1fr; } .body .map { height: auto; min-height: clamp(var(--mh), 34cqw, 640px); } }
 .map { position: relative; height: var(--mh); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,.07); background: #081521; }
 .map svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .ctx { fill: #1d2024; stroke: #2c3036; stroke-width: 1; }
